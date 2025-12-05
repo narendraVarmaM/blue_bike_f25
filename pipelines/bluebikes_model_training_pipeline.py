@@ -116,7 +116,7 @@ if train_mae < current_mae:
         input_example=features.sample(),
         model_schema=model_schema,
     )
-    model.save(model_path)
+    model.save(str(model_path))
     
     print(f"✓ Model registered successfully!")
     print(f"  Model name: {config.MODEL_NAME}")
