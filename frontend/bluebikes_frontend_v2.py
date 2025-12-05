@@ -202,13 +202,13 @@ for tab, location_id in zip(tabs, top10_ids):
         try:
             station_features = features[features["pickup_location_id"] == location_id]
             station_prediction = predictions[predictions["pickup_location_id"] == location_id]
-            
+
             if not station_features.empty and not station_prediction.empty:
                 fig = plot_prediction(
                     features=station_features,
                     prediction=station_prediction,
                 )
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, key=f"tab_station_{location_id}")
             else:
                 st.warning(f"No data available for station {location_id}")
         except Exception as e:
@@ -226,15 +226,15 @@ if selected_station != "-- Select Station --":
     try:
         station_features = features[features["pickup_location_id"] == selected_station]
         station_prediction = predictions[predictions["pickup_location_id"] == selected_station]
-        
+
         if not station_features.empty and not station_prediction.empty:
             st.write(f"**Predicted demand:** {station_prediction['predicted_demand'].iloc[0]:.0f} rides")
-            
+
             fig = plot_prediction(
                 features=station_features,
                 prediction=station_prediction,
             )
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True, key=f"dropdown_station_{selected_station}")
         else:
             st.warning(f"No data available for station {selected_station}")
     except Exception as e:
