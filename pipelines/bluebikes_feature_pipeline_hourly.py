@@ -7,7 +7,7 @@ import hopsworks
 import pandas as pd
 
 import src.bluebikes_config as config
-from src.bluebikes_config import fetch_batch_raw_data, transform_raw_data_into_ts_data
+from src.bluebikes_data_utils import fetch_batch_raw_data, transform_raw_data_into_ts_data
 
 # Configure logging
 logging.basicConfig(
