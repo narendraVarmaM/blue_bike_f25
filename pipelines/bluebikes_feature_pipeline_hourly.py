@@ -36,7 +36,7 @@ logger.info(f"Raw data fetched. Number of records: {len(rides)}")
 
 # Step 4: Transform raw data into time-series data with weather features
 logger.info("Transforming raw data into time-series data with weather integration...")
-ts_data = transform_raw_data_into_ts_data(rides, include_weather=True)
+ts_data = transform_raw_data_into_ts_data(rides, include_weather=False)
 logger.info(
     f"Transformation complete. Number of records in time-series data: {len(ts_data)}"
 )
