@@ -214,12 +214,12 @@ def filter_bluebikes_data(rides: pd.DataFrame, year: int, month: int) -> pd.Data
     
     rides = rides.rename(columns=rename_dict)
     
-    # Convert timestamps
-    rides['started_at'] = pd.to_datetime(rides['started_at'], errors='coerce')
+    # Convert timestamps (timezone-aware for consistent comparisons)
+    rides['started_at'] = pd.to_datetime(rides['started_at'], errors='coerce', utc=True)
     
-    # Calculate start and end dates for the specified month
-    start_date = pd.Timestamp(year=year, month=month, day=1)
-    end_date = pd.Timestamp(year=year + (month // 12), month=(month % 12) + 1, day=1)
+    # Calculate start and end dates for the specified month (timezone-aware)
+    start_date = pd.Timestamp(year=year, month=month, day=1, tz='UTC')
+    end_date = pd.Timestamp(year=year + (month // 12), month=(month % 12) + 1, day=1, tz='UTC')
     
     # Define filters
     date_range_filter = (rides['started_at'] >= start_date) & (rides['started_at'] < end_date)
@@ -260,7 +260,11 @@ def filter_bluebikes_data(rides: pd.DataFrame, year: int, month: int) -> pd.Data
         },
         inplace=True,
     )
-    
+
+    # Ensure timezone is preserved after filtering and renaming
+    if validated_rides['pickup_datetime'].dt.tz is None:
+        validated_rides['pickup_datetime'] = validated_rides['pickup_datetime'].dt.tz_localize('UTC')
+
     # Verify we have data
     if validated_rides.empty:
         raise ValueError(f"No valid rides found for {year}-{month:02} after filtering.")
@@ -287,8 +291,8 @@ def fill_missing_rides_full_range(df, hour_col, location_col, rides_col):
     Returns:
     - DataFrame with missing hours and locations filled in with 0 rides
     """
-    # Ensure the hour column is in datetime format
-    df[hour_col] = pd.to_datetime(df[hour_col])
+    # Ensure the hour column is in datetime format (preserve timezone)
+    df[hour_col] = pd.to_datetime(df[hour_col], utc=True)
     
     # Get the full range of hours (from min to max) with hourly frequency
     full_hours = pd.date_range(
@@ -464,7 +468,13 @@ def fetch_batch_raw_data(
     # Shift dates back by TIME_SHIFT_WEEKS (8 weeks = 2 months)
     historical_from_date = from_date - timedelta(weeks=TIME_SHIFT_WEEKS)
     historical_to_date = to_date - timedelta(weeks=TIME_SHIFT_WEEKS)
-    
+
+    # Ensure timezone-aware for comparisons
+    if not hasattr(historical_from_date, 'tz') or historical_from_date.tz is None:
+        historical_from_date = pd.Timestamp(historical_from_date, tz='UTC')
+    if not hasattr(historical_to_date, 'tz') or historical_to_date.tz is None:
+        historical_to_date = pd.Timestamp(historical_to_date, tz='UTC')
+
     print(f"Fetching historical data from {historical_from_date} to {historical_to_date}")
     
     # Load and filter data for the historical period
