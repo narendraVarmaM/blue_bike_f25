@@ -1,0 +1,35 @@
+name: bluebikes_hourly_inference_pipeline
+
+on:
+  workflow_run:
+    workflows: ["bluebikes_hourly_features_pipeline"]
+    types:
+      - completed
+  workflow_dispatch: # Allows manual triggering of the workflow
+
+jobs:
+  run-inference-pipeline:
+    runs-on: ubuntu-latest
+    
+    # Only run if the feature pipeline succeeded
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11' # Specify the Python version
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt # Install dependencies
+
+      - name: Run inference pipeline
+        env:
+          HOPSWORKS_API_KEY: ${{ secrets.HOPSWORKS_API_KEY}}
+          HOPSWORKS_PROJECT_NAME: ${{ secrets.HOPSWORKS_PROJECT_NAME}}
+        run: python -m pipelines.bluebikes_inference_pipeline
