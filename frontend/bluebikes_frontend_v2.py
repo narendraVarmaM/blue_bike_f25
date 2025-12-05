@@ -141,17 +141,17 @@ with st.spinner(text="🤖 Loading predictions..."):
         st.error(f"Error loading predictions: {e}")
         st.stop()
 
-# Step 3: Create visualization
-with st.spinner(text="🗺️ Creating interactive map..."):
-    st.subheader("Predicted Demand by Station")
-    map_obj = create_bluebikes_map(predictions)
+# # Step 3: Create visualization
+# with st.spinner(text="🗺️ Creating interactive map..."):
+#     st.subheader("Predicted Demand by Station")
+#     map_obj = create_bluebikes_map(predictions)
     
-    # Display the map
-    if st.session_state.map_created:
-        st_folium(st.session_state.map_obj, width=1200, height=600, returned_objects=[])
+#     # Display the map
+#     if st.session_state.map_created:
+#         st_folium(st.session_state.map_obj, width=1200, height=600, returned_objects=[])
     
-    st.sidebar.write("✓ Map created")
-    progress_bar.progress(3 / N_STEPS)
+#     st.sidebar.write("✓ Map created")
+#     progress_bar.progress(3 / N_STEPS)
 
 # Display statistics
 st.subheader("📈 Prediction Statistics")
