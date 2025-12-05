@@ -34,6 +34,8 @@ print(f"\n[1/5] Fetching data from feature store...")
 print(f"Looking back: 180 days (with 2-month time shift)")
 ts_data = fetch_days_data(180)
 
+print(f"Data fetched with {len(ts_data)} records")
+
 print(f"Loaded {len(ts_data):,} records")
 print(f"Date range: {ts_data['pickup_hour'].min()} to {ts_data['pickup_hour'].max()}")
 print(f"Unique stations: {ts_data['pickup_location_id'].nunique()}")

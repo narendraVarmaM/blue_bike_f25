@@ -14,6 +14,8 @@ from datetime import datetime, timedelta
 
 import pandas as pd
 
+from src.bluebikes_config import TIME_SHIFT_WEEKS
+
 import src.bluebikes_config as config
 from src.bluebikes_inference import (
     get_feature_store,
@@ -30,9 +32,9 @@ current_date = pd.Timestamp.now(tz="Etc/UTC")
 feature_store = get_feature_store()
 
 # Read time-series data from the feature store
-# Blue Bikes uses same 28-day window as NYC Taxi
-fetch_data_to = current_date - timedelta(hours=1)
-fetch_data_from = current_date - timedelta(days=1 * 29)
+# Blue Bikes uses same 28-day window
+fetch_data_to = current_date - timedelta(hours=1) - timedelta(weeks=TIME_SHIFT_WEEKS)
+fetch_data_from = current_date - timedelta(days=1 * 29) - timedelta(weeks=TIME_SHIFT_WEEKS)
 
 print(f"[Blue Bikes Inference Pipeline]")
 print(f"Current time: {current_date}")
