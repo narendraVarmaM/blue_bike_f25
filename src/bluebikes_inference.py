@@ -220,8 +220,8 @@ def fetch_days_data(days):
     current_date = pd.to_datetime(datetime.now(timezone.utc))
     
     # Shift by TIME_SHIFT_WEEKS (8 weeks = 2 months) to get historical data
-    fetch_data_from = current_date - timedelta(days=(config.TIME_SHIFT_WEEKS * 7 + days))
-    fetch_data_to = current_date - timedelta(days=config.TIME_SHIFT_WEEKS * 7)
+    fetch_data_from = current_date - timedelta(days=(config.TIME_SHIFT_WEEKS * 7 + days + 365))
+    fetch_data_to = current_date - timedelta(days=config.TIME_SHIFT_WEEKS * 7 + 365)
     
     print(f"Fetching data from {fetch_data_from} to {fetch_data_to}")
     
