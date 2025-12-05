@@ -176,8 +176,8 @@ def fetch_predictions(hours):
     Returns:
         pd.DataFrame: Historical predictions
     """
-    current_hour = (pd.Timestamp.now(tz="Etc/UTC") - timedelta(hours=hours)).floor("h") - timedelta(weeks=config.TIME_SHIFT_WEEKS)
-    
+    current_hour = (pd.Timestamp.now(tz="Etc/UTC") - (timedelta(hours=hours) + timedelta(weeks=config.TIME_SHIFT_WEEKS))).floor("h")
+    print(f"Fetching predictions from {current_hour} onwards")
     fs = get_feature_store()
     fg = fs.get_feature_group(name=config.FEATURE_GROUP_MODEL_PREDICTION, version=1)
     
@@ -196,8 +196,7 @@ def fetch_hourly_rides(hours):
     Returns:
         pd.DataFrame: Actual ride data
     """
-    current_hour = (pd.Timestamp.now(tz="Etc/UTC") - timedelta(hours=hours)).floor("h") - timedelta(weeks=config.TIME_SHIFT_WEEKS)
-    
+    current_hour = (pd.Timestamp.now(tz="Etc/UTC") - (timedelta(hours=hours) + timedelta(weeks=config.TIME_SHIFT_WEEKS))).floor("h")
     fs = get_feature_store()
     fg = fs.get_feature_group(name=config.FEATURE_GROUP_NAME, version=1)
     
