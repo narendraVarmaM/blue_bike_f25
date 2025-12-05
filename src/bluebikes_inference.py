@@ -96,7 +96,7 @@ def load_model_from_registry(version=None):
     from pathlib import Path
     import joblib
     
-    from src.pipeline_utils import (
+    from src.bluebikes_pipeline_utils import (
         TemporalFeatureEngineer,
         average_rides_last_4_weeks,
     )
