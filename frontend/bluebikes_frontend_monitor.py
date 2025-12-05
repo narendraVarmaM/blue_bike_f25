@@ -144,16 +144,28 @@ with col1:
     # Sample data for scatter plot (all points would be too many)
     sample_size = min(1000, len(merged_df))
     sample_df = merged_df.sample(n=sample_size)
-    
-    fig_scatter = px.scatter(
-        sample_df,
-        x="rides",
-        y="predicted_demand",
-        title=f"Predicted vs Actual Rides (sample of {sample_size})",
-        labels={"rides": "Actual Rides", "predicted_demand": "Predicted Rides"},
-        opacity=0.5,
-        trendline="ols"
-    )
+
+    # Try to create scatter plot with trendline, fallback without if statsmodels unavailable
+    try:
+        fig_scatter = px.scatter(
+            sample_df,
+            x="rides",
+            y="predicted_demand",
+            title=f"Predicted vs Actual Rides (sample of {sample_size})",
+            labels={"rides": "Actual Rides", "predicted_demand": "Predicted Rides"},
+            opacity=0.5,
+            trendline="ols"
+        )
+    except ImportError:
+        # Fallback without trendline if statsmodels is not available
+        fig_scatter = px.scatter(
+            sample_df,
+            x="rides",
+            y="predicted_demand",
+            title=f"Predicted vs Actual Rides (sample of {sample_size})",
+            labels={"rides": "Actual Rides", "predicted_demand": "Predicted Rides"},
+            opacity=0.5
+        )
     
     # Add perfect prediction line
     max_val = max(sample_df["rides"].max(), sample_df["predicted_demand"].max())
