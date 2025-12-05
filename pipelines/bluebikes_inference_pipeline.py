@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 
 import pandas as pd
 
-import backup.config as config
+import src.bluebikes_config as config
 from src.bluebikes_inference import (
     get_feature_store,
     get_model_predictions,

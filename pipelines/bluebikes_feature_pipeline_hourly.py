@@ -6,8 +6,8 @@ from datetime import datetime, timedelta, timezone
 import hopsworks
 import pandas as pd
 
-import backup.config as config
-from backup.data_utils import fetch_batch_raw_data, transform_raw_data_into_ts_data
+import src.bluebikes_config as config
+from src.bluebikes_config import fetch_batch_raw_data, transform_raw_data_into_ts_data
 
 # Configure logging
 logging.basicConfig(
