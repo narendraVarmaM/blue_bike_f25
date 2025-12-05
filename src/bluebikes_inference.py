@@ -5,8 +5,8 @@ import numpy as np
 import pandas as pd
 from hsfs.feature_store import FeatureStore
 
-import backup.config as config
-from backup.data_utils import transform_ts_data_info_features
+import src.bluebikes_config as config
+from src.bluebikes_data_utils import transform_ts_data_info_features
 
 
 def get_hopsworks_project() -> hopsworks.project.Project:

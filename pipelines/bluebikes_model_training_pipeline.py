@@ -16,7 +16,7 @@ from hsml.model_schema import ModelSchema
 from hsml.schema import Schema
 from sklearn.metrics import mean_absolute_error
 
-import backup.config as config
+import src.bluebikes_config as config
 from src.bluebikes_data_utils import transform_ts_data_into_features
 from src.bluebikes_inference import (
     fetch_days_data,
