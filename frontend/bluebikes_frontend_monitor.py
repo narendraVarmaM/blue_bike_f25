@@ -73,13 +73,22 @@ with st.spinner("🔄 Processing data..."):
         df_actual,
         df_predictions,
         on=["pickup_location_id", "pickup_hour"],
-        how="inner"
+        how="inner",
+        suffixes=('_actual', '_pred')
     )
-    
+
     if merged_df.empty:
         st.error("No matching data found between predictions and actual rides. Please check the time range.")
         st.stop()
-    
+
+    # Keep station_name from either source (they should be the same)
+    if 'station_name_actual' in merged_df.columns:
+        merged_df['station_name'] = merged_df['station_name_actual']
+        merged_df = merged_df.drop(columns=['station_name_actual', 'station_name_pred'], errors='ignore')
+    elif 'station_name_pred' in merged_df.columns:
+        merged_df['station_name'] = merged_df['station_name_pred']
+        merged_df = merged_df.drop(columns=['station_name_pred'], errors='ignore')
+
     # Calculate error metrics
     merged_df["absolute_error"] = abs(merged_df["predicted_demand"] - merged_df["rides"])
     merged_df["squared_error"] = (merged_df["predicted_demand"] - merged_df["rides"]) ** 2
