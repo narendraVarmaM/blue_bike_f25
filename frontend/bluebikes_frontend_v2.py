@@ -28,6 +28,7 @@ from streamlit_folium import st_folium
 from src.bluebikes_config import DATA_DIR
 from src.bluebikes_inference import fetch_next_hour_predictions, load_batch_of_features_from_store
 from src.bluebikes_plot_utils import plot_prediction
+from src.bluebikes_station_names import add_station_names_to_dataframe
 
 # Initialize session state for the map
 if "map_created" not in st.session_state:
@@ -135,6 +136,7 @@ with st.spinner(text="📊 Fetching inference data..."):
 with st.spinner(text="🤖 Loading predictions..."):
     try:
         predictions = fetch_next_hour_predictions()
+        predictions = add_station_names_to_dataframe(predictions)
         st.sidebar.write("✓ Predictions loaded")
         progress_bar.progress(2 / N_STEPS)
     except Exception as e:
@@ -184,8 +186,8 @@ with col4:
 # Top stations table
 st.subheader("🔝 Top 10 Stations by Predicted Demand")
 top10_df = predictions.sort_values("predicted_demand", ascending=False).head(10)
-top10_df_display = top10_df[['pickup_location_id', 'predicted_demand']].copy()
-top10_df_display.columns = ['Station ID', 'Predicted Demand']
+top10_df_display = top10_df[['station_name', 'predicted_demand']].copy()
+top10_df_display.columns = ['Station Name', 'Predicted Demand']
 top10_df_display['Predicted Demand'] = top10_df_display['Predicted Demand'].round(0).astype(int)
 st.dataframe(top10_df_display, use_container_width=True)
 
@@ -193,9 +195,10 @@ st.dataframe(top10_df_display, use_container_width=True)
 st.subheader("📊 Time Series - Top 10 Stations")
 
 top10_ids = top10_df['pickup_location_id'].tolist()
+top10_names = top10_df['station_name'].tolist()
 
 # Create tabs for each station
-tabs = st.tabs([f"Station {sid}" for sid in top10_ids])
+tabs = st.tabs([name.split(' at ')[0] if ' at ' in name else name[:30] for name in top10_names])
 
 for tab, location_id in zip(tabs, top10_ids):
     with tab:
@@ -216,18 +219,27 @@ for tab, location_id in zip(tabs, top10_ids):
 
 # Station selector
 st.subheader("🔍 Search Specific Station")
-all_station_ids = sorted(predictions['pickup_location_id'].unique())
-selected_station = st.selectbox(
+# Create mapping of display names to station IDs
+station_options = predictions[['station_name', 'pickup_location_id']].drop_duplicates()
+station_options = station_options.sort_values('station_name')
+station_display_names = ["-- Select Station --"] + station_options['station_name'].tolist()
+station_name_to_id = dict(zip(station_options['station_name'], station_options['pickup_location_id']))
+
+selected_station_name = st.selectbox(
     "Select a station to view its prediction:",
-    ["-- Select Station --"] + all_station_ids
+    station_display_names
 )
 
-if selected_station != "-- Select Station --":
+# Get the actual station ID from the selected name
+selected_station = station_name_to_id.get(selected_station_name, None)
+
+if selected_station is not None:
     try:
         station_features = features[features["pickup_location_id"] == selected_station]
         station_prediction = predictions[predictions["pickup_location_id"] == selected_station]
 
         if not station_features.empty and not station_prediction.empty:
+            st.write(f"**{selected_station_name}**")
             st.write(f"**Predicted demand:** {station_prediction['predicted_demand'].iloc[0]:.0f} rides")
 
             fig = plot_prediction(
@@ -236,7 +248,7 @@ if selected_station != "-- Select Station --":
             )
             st.plotly_chart(fig, use_container_width=True, key=f"dropdown_station_{selected_station}")
         else:
-            st.warning(f"No data available for station {selected_station}")
+            st.warning(f"No data available for station {selected_station_name}")
     except Exception as e:
         st.error(f"Error: {e}")
 

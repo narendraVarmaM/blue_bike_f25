@@ -24,6 +24,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from src.bluebikes_inference import fetch_hourly_rides, fetch_predictions
+from src.bluebikes_station_names import add_station_names_to_dataframe
 
 # Configure page
 st.set_page_config(
@@ -54,12 +55,14 @@ with st.spinner(f"📥 Fetching data for the past {past_hours} hours..."):
     try:
         # Fetch actual rides
         df_actual = fetch_hourly_rides(past_hours)
+        df_actual = add_station_names_to_dataframe(df_actual)
         st.sidebar.write(f"✓ Loaded {len(df_actual):,} actual ride records")
-        
+
         # Fetch predictions
         df_predictions = fetch_predictions(past_hours)
+        df_predictions = add_station_names_to_dataframe(df_predictions)
         st.sidebar.write(f"✓ Loaded {len(df_predictions):,} prediction records")
-        
+
     except Exception as e:
         st.error(f"Error fetching data: {e}")
         st.stop()
@@ -206,13 +209,13 @@ with col2:
 # Performance by station
 st.header("🚉 Station-Level Performance")
 
-station_performance = merged_df.groupby("pickup_location_id").agg({
+station_performance = merged_df.groupby(["pickup_location_id", "station_name"]).agg({
     "absolute_error": "mean",
     "rides": "sum",
     "predicted_demand": "sum"
 }).reset_index()
 
-station_performance.columns = ["Station ID", "Avg MAE", "Total Actual", "Total Predicted"]
+station_performance.columns = ["Station ID", "Station Name", "Avg MAE", "Total Actual", "Total Predicted"]
 station_performance["Error %"] = (station_performance["Avg MAE"] / 
                                    station_performance["Total Actual"].replace(0, 1) * 100)
 
@@ -220,7 +223,7 @@ station_performance["Error %"] = (station_performance["Avg MAE"] /
 st.subheader("⚠️ Stations with Highest MAE")
 worst_stations = station_performance.nlargest(10, "Avg MAE")
 st.dataframe(
-    worst_stations.style.format({
+    worst_stations[["Station Name", "Avg MAE", "Total Actual", "Total Predicted", "Error %"]].style.format({
         "Avg MAE": "{:.2f}",
         "Total Actual": "{:.0f}",
         "Total Predicted": "{:.0f}",
@@ -233,7 +236,7 @@ st.dataframe(
 st.subheader("✅ Stations with Lowest MAE")
 best_stations = station_performance.nsmallest(10, "Avg MAE")
 st.dataframe(
-    best_stations.style.format({
+    best_stations[["Station Name", "Avg MAE", "Total Actual", "Total Predicted", "Error %"]].style.format({
         "Avg MAE": "{:.2f}",
         "Total Actual": "{:.0f}",
         "Total Predicted": "{:.0f}",

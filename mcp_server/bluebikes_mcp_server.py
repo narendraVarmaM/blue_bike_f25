@@ -23,16 +23,11 @@ logging.basicConfig(level=logging.ERROR)
 for logger_name in ['hopsworks', 'hsfs', 'urllib3', 'requests']:
     logging.getLogger(logger_name).setLevel(logging.ERROR)
 
-# Redirect stdout/stderr temporarily during imports
-import io
-_original_stdout = sys.stdout
-_original_stderr = sys.stderr
-sys.stdout = io.StringIO()
-sys.stderr = io.StringIO()
-
 # Add parent directory to path for imports
 parent_dir = str(Path(__file__).parent.parent)
 sys.path.append(parent_dir)
+
+import io
 
 import asyncio
 import json
@@ -52,25 +47,18 @@ from src.bluebikes_inference import (
     load_model_from_registry,
 )
 
-# Restore stdout/stderr after imports
-sys.stdout = _original_stdout
-sys.stderr = _original_stderr
-
 # Initialize MCP server
 app = Server("bluebikes-hopsworks")
 
 
-# Context manager to suppress output during tool calls
+# Context manager to suppress stderr during tool calls (keep stdout for MCP communication)
 class SuppressOutput:
     def __enter__(self):
-        self._stdout = sys.stdout
         self._stderr = sys.stderr
-        sys.stdout = io.StringIO()
-        sys.stderr = io.StringIO()
+        sys.stderr = io.StringIO()  # Only suppress stderr (logs), keep stdout for MCP
         return self
 
     def __exit__(self, *args):
-        sys.stdout = self._stdout
         sys.stderr = self._stderr
 
 
